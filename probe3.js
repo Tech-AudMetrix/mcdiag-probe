@@ -22,14 +22,13 @@ function controlHtml() {
   return s;
 }
 
-async function snap(page, label) {
-  const st = await page.evaluate(function (unitId) {
+async function snap(page, unitId) {
+  const st = await page.evaluate(function (id) {
     var o = {};
-    o.label = label;
     o.url = location.href;
     o.readyState = document.readyState;
     o.visibility = document.visibilityState;
-    var u = document.getElementById(unitId);
+    var u = document.getElementById(id);
     o.unitFound = !!u;
     if (u) {
       var cs = window.getComputedStyle(u);
@@ -41,7 +40,7 @@ async function snap(page, label) {
       o.style = (u.getAttribute("style") || "").slice(0, 300);
     }
     return o;
-  }, IUNIT);
+  }, unitId);
   return st;
 }
 
@@ -61,13 +60,13 @@ async function snap(page, label) {
   });
   try { await page.goto(REAL, { waitUntil: "domcontentloaded", timeout: 60000 }); } catch (e) { ev.push("[gotoerrA] " + e.message); }
   await page.waitForTimeout(15000);
-  const a = await snap(page, "control");
+  const a = await snap(page, IUNIT);
   try { await page.screenshot({ path: OUT + "/probe3_A_control.png" }); } catch (e) {}
 
   await page.unroute("**/en/dante-dating-app-como-funciona/**");
   try { await page.goto(REAL + "?nocache=" + Date.now(), { waitUntil: "domcontentloaded", timeout: 60000 }); } catch (e) { ev.push("[gotoerrB] " + e.message); }
   await page.waitForTimeout(22000);
-  const b = await snap(page, "real");
+  const b = await snap(page, IUNIT);
   try { await page.screenshot({ path: OUT + "/probe3_B_real.png" }); } catch (e) {}
 
   fs.writeFileSync(OUT + "/probe3_state.json", JSON.stringify({ control: a, real: b }, null, 2));
